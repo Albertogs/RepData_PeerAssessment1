@@ -7,19 +7,78 @@ output:
 
 
 ## Loading and preprocessing the data
+```{r chunk1, echo=TRUE}
+dact <- read.csv(unz("./activity.zip", "activity.csv"))
+as.Date(dact$date, format="%Y-%m-%d")
 
-
+´´´  
 
 ## What is mean total number of steps taken per day?
-
-
-
+```{r cunk2, echo=TRUE}
+sv <- split(dact$steps, dact$date)
+vv <- lapply(sv, function(x) sum(x, na.rm = TRUE))
+v  <- as.numeric(vv[!is.na(vv)])
+hist(v, col="red", breaks=seq(from=0, to=25000, by=2500), xlab="Total number of steps per day", ylab="Frequency", main="Histogram of the total number of steps taken each day")
+dev.copy(png, file="plot1.png", height=480, width=480)
+dev.off()
+meanv    <- round(mean(v))
+medianv  <- median(v)
+cat("Mean   = ", meanv)
+cat("Median = ", medianv)
+´´´
 ## What is the average daily activity pattern?
-
-
+```{r cunk2, echo=TRUE}
+sp <- split(dact$steps, dact$interval)
+vms <- sapply(sp, function(x) mean(x, na.rm = TRUE))
+plot(x=as.numeric(names(vms)),y=vms, type="l", xlab="Time/Five-minute interval", ylab="Average number of steps", col="blue")
+dev.copy(png, file="plot2.png", height=480, width=480)
+dev.off()
+#barplot(height = vms, xlab="Time/Five-minute interval", ylab="Average number of steps", col="blue")
+cat("Maximum value =", max(vms))
+cat("Indx Maximum value =")
+which.max(vms)
 
 ## Imputing missing values
+nna <- sum(is.na(dact$steps))
+cat("Number of missing values =", nna)
+fact <- dact
+pos_na <- which(is.na(fact$steps))
+vec_m  <- rep(mean(fact$steps, na.rm = TRUE), times=length(pos_na))
+fact[pos_na, 1] = vec_m
+rm(vec_m, pos_na)
 
+vk   <- as.numeric(lapply(split(fact$steps, fact$date), function(x) sum(x)))
+hist(vk, col="red", breaks=seq(from=0, to=25000, by=2500), xlab="Total number of steps per day", ylab="Frequency", main="Histogram of the total number of steps taken each day")
+dev.copy(png, file="plot3.png", height=480, width=480)
+dev.off() 
+meanvk    <- round(mean(vk))
+medianvk  <- median(vk)
+cat("Mean   = ", meanvk)
+cat("Median = ", round(medianvk))
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+library(timeDate)
+fact["TypeDay"] <- factor(isWeekday(fact$date), levels=c(TRUE,FALSE), labels=c("weekday", "weekend"))
+fact["WeekDay"] <- weekdays(as.Date(fact$date))
+mean_fact <- aggregate(fact$steps, by=list(fact$TypeDay,fact$WeekDay, fact$interval), mean)
+names(mean_fact) <- c("TypeDay", "WeekDay", "interval","mean_steps")
+library(lattice)
+xyplot(mean_fact$mean ~ mean_fact$interval | mean_fact$TypeDay, 
+       type="l", 
+       lwd=1, 
+       xlab="Interval", 
+       ylab="Number of steps", 
+       layout=c(1,2))
+dev.copy(png, file="plot4.png", height=480, width=480)
+dev.off() 
+#vwkd <- fact[fact$TypeDay=="weekday",]
+#vwkn <- fact[fact$TypeDay=="weekend",]
+#svwkd <- lapply(split(vwkd$steps, vwkd$interval), function(x) mean(x))
+#svwkn <- lapply(split(vwkn$steps, vwkn$interval), function(x) mean(x))
+#plot(x=as.numeric(names(svwkd)),y=svwkd, type="l", xlab="Time/Five-minute interval", ylab="Average number of steps", col="blue")
+#lines(x=as.numeric(names(svwkn)), y=svwkn, col="red")
+#dev.copy(png, file="plot4.png", height=480, width=480)
+#dev.off() 
+
+´´´
