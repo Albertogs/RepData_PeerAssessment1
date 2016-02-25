@@ -27,7 +27,7 @@ cat("Mean   = ", meanv)
 cat("Median = ", medianv)
 ´´´
 ## What is the average daily activity pattern?
-```{r cunk2, echo=TRUE}
+```{r cunk3, echo=TRUE}
 sp <- split(dact$steps, dact$interval)
 vms <- sapply(sp, function(x) mean(x, na.rm = TRUE))
 plot(x=as.numeric(names(vms)),y=vms, type="l", xlab="Time/Five-minute interval", ylab="Average number of steps", col="blue")
